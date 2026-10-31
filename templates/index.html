@@ -587,5 +587,21 @@ const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecti
 ["top", "guide", "vocab"].forEach(id => io.observe($(id)));
 window.addEventListener("scroll", () => $("nav").classList.toggle("scrolled", window.scrollY > 8), {passive: true});
 </script>
+<script src="https://unpkg.com/lenis@1.3.11/dist/lenis.min.js"></script>
+<script>
+  const lenis = new Lenis({
+    duration: 1.2,
+    smoothWheel: true,
+    wheelMultiplier: 1,
+    touchMultiplier: 1
+  });
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+
+  requestAnimationFrame(raf);
+</script>
 </body>
 </html>
