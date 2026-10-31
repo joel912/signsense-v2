@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="supported-color-schemes" content="light">
+<title>SignSense AI - Sign Studio</title>
+<link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --ink:#0f1b33; --muted:#4a5a78; --light:#8693ad;
+  --sky:#38bdf8; --blue:#3b82f6; --teal:#14b8a6; --violet:#6366f1;
+  --good:#12b886; --bad:#f0556a;
+  --sans:'Poppins','Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* Everything below is sized in rem, and rem grows with the screen, so the design looks the same on a laptop and on a 4K monitor. */
+html{font-size:clamp(13px,1.12vw,40px);scroll-behavior:smooth;color-scheme:light}
+@media (max-width:720px){html{font-size:15px}}
+body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh;
+  background:linear-gradient(100deg,#eaf4ff 0%,#dcecfc 30%,#cfe5fb 58%,#c4e1f7 80%,#d3f0f2 100%);background-attachment:fixed}
+.hidden{display:none!important}
+section[id]{scroll-margin-top:5rem}
+
+/* ---------- background ---------- */
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(4.5rem);opacity:.8}
+.b1{width:46vw;height:46vw;left:-12vw;top:-14vw;background:#9fd0ff}
+.b2{width:44vw;height:44vw;right:-10vw;top:8vh;background:#8fb9ff}
+.b3{width:30vw;height:30vw;left:32vw;bottom:-14vw;background:#a9e8ee}
+.bubble{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.7);
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.9),rgba(255,255,255,.2) 55%,rgba(255,255,255,.06));
+  box-shadow:inset 0 0 3rem rgba(255,255,255,.4);will-change:transform}
+.q1{width:22vw;height:22vw;left:-6vw;top:34vh}
+.q2{width:14vw;height:14vw;right:4vw;top:6vh;animation-delay:-4s;
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.7),rgba(110,180,255,.42) 60%,rgba(110,180,255,.12))}
+.q3{width:9vw;height:9vw;left:9vw;bottom:5vh;animation-delay:-8s}
+@keyframes floatA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(2.4rem,-3.4rem) scale(1.05)}}
+@keyframes floatB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-2rem,3rem) scale(1.07)}}
+@keyframes floatC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(1.8rem,-2.8rem) scale(.94)}}
+.q1{animation:floatA 11s ease-in-out infinite}
+.q2{animation:floatB 9s ease-in-out -3s infinite}
+.q3{animation:floatC 7s ease-in-out -5s infinite}
+.blob{animation:floatB 18s ease-in-out infinite}
+.b2{animation-duration:22s;animation-delay:-6s}
+.b3{animation-duration:20s;animation-delay:-10s}
+
+/* ---------- glass ---------- */
+.glass{background:linear-gradient(135deg,rgba(255,255,255,.6),rgba(255,255,255,.26));
+  backdrop-filter:blur(1.4rem) saturate(150%);-webkit-backdrop-filter:blur(1.4rem) saturate(150%);
+  border:1px solid rgba(255,255,255,.8);
+  box-shadow:0 .9rem 2.8rem rgba(70,110,170,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.35)}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:60;height:5rem;padding:0 4.5rem;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem;transition:background .3s,box-shadow .3s}
+.nav.scrolled{background:rgba(255,255,255,.45);backdrop-filter:blur(1.1rem);-webkit-backdrop-filter:blur(1.1rem);box-shadow:0 .5rem 1.9rem rgba(70,110,170,.12)}
+.brand{display:flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);font-weight:600;font-size:1.05rem;letter-spacing:-.01em}
+.brand img{width:2.3rem;height:2.3rem;border-radius:.65rem;box-shadow:0 .35rem 1rem rgba(59,130,246,.35)}
+.tabs{display:flex;gap:2.8rem}
+.tabs a{font-size:.88rem;font-weight:500;color:var(--muted);text-decoration:none;cursor:pointer;padding:.4rem .1rem;position:relative;white-space:nowrap}
+.tabs a:hover{color:var(--ink)}
+.tabs a.active{color:var(--ink);font-weight:600}
+.tabs a.active::after{content:"";position:absolute;left:0;right:0;bottom:-.2rem;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--sky),var(--blue))}
+.right{display:flex;justify-content:flex-end;align-items:center;gap:.9rem;position:relative}
+.icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;border:0;background:transparent;cursor:pointer;display:grid;place-items:center;color:var(--ink);transition:.2s}
+.icon-btn:hover{background:rgba(255,255,255,.65)}
+.icon-btn svg,.me svg{width:1.2rem;height:1.2rem}
+.me svg{width:.9rem;height:.9rem}
+.me{display:flex;align-items:center;gap:.4rem;border:0;background:transparent;cursor:pointer;padding:.2rem;border-radius:999px;color:var(--ink)}
+.me:hover{background:rgba(255,255,255,.55)}
+.me .av{width:2.1rem;height:2.1rem;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#2563eb);display:grid;place-items:center;border:2px solid #fff;font-size:1.05rem}
+.menu{position:absolute;right:0;top:3.6rem;width:19rem;border-radius:1.4rem;padding:1.3rem;display:none;z-index:80}
+.menu.open{display:block}
+.menu h5{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem}
+.row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:.9rem;font-size:.86rem;font-weight:500}
+.row input[type=range]{width:7.5rem;accent-color:#3b82f6}
+.row input[type=checkbox]{accent-color:#3b82f6;width:1.1rem;height:1.1rem}
+.row select{border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.75);border-radius:.6rem;padding:.35rem .6rem;font:inherit;color:var(--ink)}
+.v{font-family:var(--mono);font-weight:700;color:#2563eb;min-width:2.4rem;text-align:right}
+@media (max-width:900px){
+  .nav{height:auto;padding:.8rem 1.2rem;grid-template-columns:1fr auto;grid-template-areas:"b r" "t t";gap:.6rem}
+  .brand{grid-area:b}.right{grid-area:r}.tabs{grid-area:t;overflow-x:auto;gap:1.6rem;padding-bottom:.3rem}
+}
+
+/* ---------- hero (layout copied from the reference) ---------- */
+.hero{min-height:calc(100vh - 5rem);padding:.5rem 0 4rem;display:flex;align-items:center}
+.grid{width:100%;max-width:90rem;margin:0 auto;padding:0 4.5rem;display:grid;
+  grid-template-columns:minmax(0,1fr) 30rem minmax(0,1fr);column-gap:3rem;align-items:center}
+.copy{grid-column:1;grid-row:1}
+.orb-wrap{grid-column:2;grid-row:1}
+.chip-wrap{grid-column:3;grid-row:1;justify-self:end;width:100%;max-width:18.5rem}
+.progress{grid-column:1 / -1;grid-row:2;justify-self:center;width:min(100%,34rem);margin-top:2.2rem}
+.setup-wrap{grid-column:2 / -1;grid-row:1 / 3}
+h1{font-size:4.4rem;font-weight:600;line-height:1.08;letter-spacing:-.025em;color:var(--ink)}
+.sub{margin-top:1.1rem;font-size:.92rem;line-height:1.7;color:var(--muted);max-width:21rem}
+.cta{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.8rem}
+.btn{border:0;font:inherit;font-weight:600;font-size:.9rem;color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:.6rem;
+  padding:.85rem 1.35rem;border-radius:999px;background:linear-gradient(135deg,#2563eb,#38a3f8 62%,#22d3ee);
+  box-shadow:0 .7rem 1.7rem rgba(37,99,235,.35),inset 0 1px 0 rgba(255,255,255,.5);transition:.2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.stop{background:linear-gradient(135deg,#f0556a,#ff9a6b);box-shadow:0 .7rem 1.7rem rgba(240,85,106,.35)}
+.btn-g{font:inherit;font-weight:500;font-size:.9rem;color:var(--ink);cursor:pointer;padding:.85rem 1.25rem;border-radius:999px;border:1px solid rgba(255,255,255,.85);
+  background:rgba(255,255,255,.55);backdrop-filter:blur(.9rem);-webkit-backdrop-filter:blur(.9rem);box-shadow:0 .5rem 1.4rem rgba(70,110,170,.12);transition:.2s}
+.btn-g:hover{background:rgba(255,255,255,.85)}
+
+/* orb + avatar */
+.orb{position:relative;width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;
+  background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.85),rgba(255,255,255,.32) 52%,rgba(255,255,255,.16));
+  border:1.5px solid rgba(255,255,255,.9);
+  box-shadow:0 1.9rem 4.4rem rgba(70,110,170,.25),inset 0 0 4.4rem rgba(255,255,255,.55),inset 0 2px 0 #fff;transition:box-shadow .3s}
+.orb.ok{box-shadow:0 1.9rem 4.4rem rgba(70,110,170,.25),0 0 0 .4rem rgba(120,185,255,.5),0 0 3rem rgba(120,185,255,.5)}
+.orb.good{box-shadow:0 0 0 .45rem rgba(18,184,134,.5),0 0 3.6rem rgba(18,184,134,.55)}
+.orb.bad{box-shadow:0 0 0 .45rem rgba(240,85,106,.5),0 0 3.6rem rgba(240,85,106,.55)}
+.avatar{position:absolute;left:50%;bottom:-3%;width:96%;transform:translateX(-50%);animation:bob 6s ease-in-out infinite;will-change:transform}
+.orb::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16%;pointer-events:none;z-index:2;
+  background:linear-gradient(to bottom,rgba(228,240,255,0),rgba(228,240,255,.5))}
+.orb.live::after{display:none}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(.3rem) rotate(-.9deg)}50%{transform:translateX(-50%) translateY(-1.2rem) rotate(.9deg)}}
+.avatar svg{display:block;width:100%;height:auto;overflow:visible}
+.orb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.cam-tag{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);padding:.4rem 1rem;border-radius:999px;font-size:.74rem;font-weight:600;
+  background:rgba(255,255,255,.82);backdrop-filter:blur(.6rem);display:none;align-items:center;gap:.5rem;white-space:nowrap;box-shadow:0 .4rem 1.1rem rgba(0,0,0,.12)}
+.cam-tag i{width:.5rem;height:.5rem;border-radius:50%;background:var(--bad)}
+.cam-tag.on i{background:var(--good);box-shadow:0 0 .5rem var(--good)}
+
+/* info chip */
+.chip{border-radius:1.8rem;padding:1.5rem}
+.tag{display:inline-block;font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .7rem;border-radius:999px;background:rgba(59,130,246,.14);color:#1d4ed8}
+.chip h4{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:.6rem}
+.sign{font-size:3.2rem;font-weight:600;letter-spacing:-.03em;line-height:1.1;word-break:break-word;margin:.5rem 0}
+.sign.dim{color:rgba(15,27,51,.2)}
+.bar{height:.5rem;border-radius:99px;background:rgba(255,255,255,.75);overflow:hidden;margin:.6rem 0 .4rem;border:1px solid rgba(255,255,255,.85)}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--sky) 60%,var(--teal));transition:width .15s linear}
+.bar i.low{background:linear-gradient(90deg,#ffb36b,var(--bad))}
+.cap{font-size:.8rem;color:var(--muted);line-height:1.5}.cap strong{color:var(--ink);font-weight:600}
+.fb{padding:.6rem .9rem;border-radius:.9rem;font-size:.8rem;font-weight:600;margin:.8rem 0;background:rgba(255,255,255,.65)}
+.fb.good{background:rgba(18,184,134,.18);color:#0b7a5a}.fb.bad{background:rgba(240,85,106,.16);color:#b3243a}
+.score{display:flex;justify-content:space-between;gap:.5rem;border-top:1px solid rgba(255,255,255,.85);padding-top:.8rem;margin-top:.4rem}
+.score div{font-size:.62rem;color:var(--muted);text-align:center;flex:1;text-transform:uppercase;letter-spacing:.08em}
+.score b{display:block;font-size:1.25rem;color:var(--ink);letter-spacing:0;font-weight:600}
+.link{color:#2563eb;cursor:pointer;text-decoration:underline;font-size:.76rem;font-weight:500;background:none;border:0;font-family:inherit}
+
+.vcard.hit{outline:3px solid var(--good);outline-offset:3px;transform:translateY(-.25rem) scale(1.02)}
+.progress small{font-size:.75rem;font-weight:500;color:var(--muted);display:flex;justify-content:space-between}
+.track{height:.55rem;border-radius:99px;margin-top:.55rem;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);overflow:hidden}
+.track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#3b82f6,#38bdf8 55%,#14b8a6);transition:width .6s}
+
+/* setup card */
+.setup{border-radius:2rem;padding:2.2rem;max-width:40rem;margin:0 auto}
+.setup h3{font-size:1.5rem;font-weight:600;letter-spacing:-.02em}.setup p{margin-top:.6rem;color:var(--muted);line-height:1.6;font-size:.92rem}
+.code{background:rgba(15,27,51,.92);color:#9bd6ff;font-family:var(--mono);font-size:.86rem;padding:.9rem 1.2rem;border-radius:1rem;margin:1rem 0;white-space:pre-wrap}
+
+@media (max-width:1100px){
+  .grid{grid-template-columns:1fr 1fr;padding:0 1.6rem;row-gap:1.2rem}
+  .copy{grid-column:1 / -1;grid-row:1;margin-top:0}.orb-wrap{grid-column:1;grid-row:2;max-width:26rem;width:100%;justify-self:center}
+  .chip-wrap{grid-column:2;grid-row:2;justify-self:center}
+  .progress{grid-row:3}.setup-wrap{grid-column:1 / -1;grid-row:2}
+  h1{font-size:3.6rem}
+}
+@media (max-width:720px){
+  .grid{grid-template-columns:1fr}
+  .copy,.orb-wrap,.chip-wrap,.progress,.setup-wrap{grid-column:1}
+  .orb-wrap{grid-row:2}.chip-wrap{grid-row:3}.progress{grid-row:4}.setup-wrap{grid-row:2}
+}
+
+/* ---------- sections ---------- */
+.section{padding:6rem 0}
+.inner{max-width:90rem;margin:0 auto;padding:0 4.5rem}
+@media (max-width:1100px){.inner{padding:0 1.6rem}.section{padding:4rem 0}}
+.eyebrow{font-size:.74rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#2563eb}
+h2{font-size:3rem;font-weight:600;letter-spacing:-.03em;line-height:1.12;margin:.6rem 0 .9rem;max-width:48rem}
+.lede{color:var(--muted);font-size:.98rem;line-height:1.75;max-width:42rem}
+.flow{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;margin:2.2rem 0 .5rem}
+.node{border-radius:1.2rem;padding:.9rem 1.3rem;font-weight:500;font-size:.88rem}
+.arrow{color:var(--light);font-size:1.2rem}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1.3rem;margin-top:2rem}
+.step{border-radius:1.7rem;padding:1.7rem}
+.num{width:2.5rem;height:2.5rem;border-radius:50%;background:linear-gradient(135deg,#2563eb,#38bdf8);color:#fff;font-weight:600;display:grid;place-items:center;margin-bottom:.9rem}
+.step h3{font-size:1.08rem;font-weight:600;margin-bottom:.5rem;letter-spacing:-.01em}.step p,.step li{color:var(--muted);font-size:.88rem;line-height:1.65}
+.step ul{list-style:none;display:grid;gap:.6rem}.step li::before{content:"✓";color:var(--good);font-weight:700;margin-right:.6rem}
+.step.warn li::before{content:"!";color:#f08a3c}
+code{font-family:var(--mono);background:rgba(255,255,255,.75);border-radius:.45rem;padding:.1rem .45rem;font-size:.8rem}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(20rem,1fr));gap:1.3rem;margin-top:1.3rem}
+.callout{margin-top:1.4rem;border-radius:1.7rem;padding:1.5rem 1.8rem;display:flex;gap:1rem;align-items:flex-start}
+.callout p{color:var(--muted);line-height:1.7;font-size:.9rem}.callout a{color:#2563eb;font-weight:600}
+.toolbar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;margin:1.8rem 0 1.4rem}
+.search{flex:1;min-width:14rem;max-width:24rem;border-radius:999px;padding:.85rem 1.4rem;font:inherit;font-size:.9rem;outline:none;color:var(--ink);
+  border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.6);backdrop-filter:blur(.9rem)}
+.search:focus{box-shadow:0 0 0 .3rem rgba(59,130,246,.25)}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.fchip{border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.5);border-radius:999px;padding:.6rem 1.1rem;font:inherit;font-weight:500;font-size:.82rem;color:var(--muted);cursor:pointer;transition:.2s}
+.fchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.count{margin-left:auto;font-size:.82rem;color:var(--muted)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(10.5rem,1fr));gap:1rem}
+.vcard{border-radius:1.5rem;padding:1.4rem 1rem;text-align:center;transition:.25s}
+.vcard b{display:block;font-size:2.2rem;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-bottom:.6rem;word-break:break-word;
+  background:linear-gradient(135deg,#2563eb,#3b9bff 60%,#14b8c6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.vcard span{display:inline-block;padding:.25rem .75rem;border-radius:999px;font-size:.64rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.75);color:var(--muted)}
+.empty{color:var(--light);padding:1.5rem 0}
+.history{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem}
+.history span{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.95);border-radius:999px;padding:.45rem 1rem;font-weight:500;color:#2563eb;font-size:.85rem}
+footer{padding:2.2rem 1.6rem 2.8rem;text-align:center;color:var(--muted);font-size:.82rem;line-height:1.7}
+footer b{color:var(--ink)}
+#toast{position:fixed;left:50%;bottom:1.8rem;transform:translateX(-50%) translateY(3rem);background:rgba(15,27,51,.94);color:#fff;padding:.8rem 1.5rem;border-radius:999px;
+  font-size:.88rem;font-weight:500;box-shadow:0 .9rem 2.1rem rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.3s;z-index:100;max-width:92vw}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="bg"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="bubble q1"></i><i class="bubble q2"></i><i class="bubble q3"></i></div>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <a class="brand" href="#top"><img src="/static/logo.svg" alt="SignSense AI logo">SignSense AI</a>
+  <nav class="tabs">
+    <a id="lnLive">Recognise</a>
+    <a id="lnQuiz">Practice</a>
+    <a id="lnGuide" href="#guide">Guide</a>
+    <a id="lnVocab" href="#vocab">Vocabulary</a>
+  </nav>
+  <div class="right">
+    <button class="icon-btn" id="btnSearch" title="Search signs" aria-label="Search signs">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    </button>
+    <button class="me" id="btnMenu" aria-label="Settings"><span class="av"><svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8.5" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg></span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="menu glass" id="menu">
+      <h5>Settings</h5>
+      <div class="row"><span>Speak signs</span><input type="checkbox" id="speak" checked></div>
+      <div class="row"><span>Confidence</span><span style="display:flex;align-items:center;gap:8px"><input type="range" id="thr" min="30" max="95" step="5" value="70"><span class="v" id="thrV">70%</span></span></div>
+      <div class="row"><span>Camera</span><select id="camIdx"><option>0</option><option>1</option><option>2</option><option>3</option></select></div>
+      <button class="btn-g" id="btnReloadTop" style="width:100%;padding:11px">↻ Reload model</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="grid">
+    <div class="copy">
+      <h1>Sign<br>Studio</h1>
+      <p class="sub">Practise Indian Sign Language with a friendly coach. Show a sign to your webcam and get instant, spoken feedback.</p>
+      <div class="cta">
+        <button class="btn" id="btnCam">▶ Start camera</button>
+        <button class="btn-g" id="btnMode">Try practice mode</button>
+      </div>
+    </div>
+
+    <div class="setup-wrap hidden" id="setupWrap">
+      <div class="setup glass" id="setup">
+        <h3>Train your model first</h3>
+        <p id="setupMsg"></p>
+        <div class="code">python collect_data.py
+python train_model.py</div>
+        <p>Then press <b>Reload model</b>.</p>
+        <div class="cta"><button class="btn" id="btnReload">↻ Reload model</button></div>
+      </div>
+    </div>
+
+    <div class="orb-wrap" id="orbWrap">
+      <div class="orb" id="orb">
+        <!-- Coach avatar. To use your own picture, delete this <div class="avatar"> block and put <img src="/static/avatar.png"> here. -->
+        <div class="avatar" id="avatar">
+          <svg viewBox="-10 0 340 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <radialGradient id="faceG" cx="42%" cy="34%" r="78%"><stop offset="0" stop-color="#fcccaa"/><stop offset=".65" stop-color="#f1ad87"/><stop offset="1" stop-color="#d98d66"/></radialGradient>
+              <linearGradient id="neckG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9906a"/><stop offset="1" stop-color="#f0ab85"/></linearGradient>
+              <linearGradient id="sweaterG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d606a"/><stop offset="1" stop-color="#2f3138"/></linearGradient>
+              <radialGradient id="beardG" cx="50%" cy="28%" r="80%"><stop offset="0" stop-color="#3f3f45"/><stop offset=".6" stop-color="#26262b"/><stop offset="1" stop-color="#151518"/></radialGradient>
+              <linearGradient id="hairG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3a40"/><stop offset="1" stop-color="#17171b"/></linearGradient>
+              <radialGradient id="noseG" cx="40%" cy="32%" r="75%"><stop offset="0" stop-color="#ffd2b0"/><stop offset="1" stop-color="#e8987a"/></radialGradient>
+              <clipPath id="mouthClip"><path d="M130 207 Q160 220 190 207 C188 224 176 236 160 236 C144 236 132 224 130 207 Z"/></clipPath>
+            </defs>
+            <!-- shoulders, arms resting down -->
+            <path d="M-6 460 L-6 362 C-4 324 30 300 96 294 L224 294 C290 300 324 324 326 362 L326 460 Z" fill="url(#sweaterG)"/>
+                        <path d="M82 306 C72 330 70 348 72 362 M238 306 C248 330 250 348 248 362" fill="none" stroke="#202228" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+            <!-- neck -->
+            <path d="M128 232 L128 292 C128 314 192 314 192 292 L192 232 Z" fill="url(#neckG)"/>
+            <path d="M108 296 C128 320 192 320 212 296" fill="none" stroke="#aeb7ca" stroke-width="9" stroke-linecap="round"/>
+            <!-- ears -->
+            <ellipse cx="81" cy="162" rx="11" ry="18" fill="#efa983"/><ellipse cx="239" cy="162" rx="11" ry="18" fill="#efa983"/>
+            <ellipse cx="83" cy="163" rx="5" ry="10" fill="#d98c68" opacity=".7"/><ellipse cx="237" cy="163" rx="5" ry="10" fill="#d98c68" opacity=".7"/>
+            <!-- face -->
+            <path d="M84 150 C84 96 116 66 160 66 C204 66 236 96 236 150 C236 196 206 236 160 244 C114 236 84 196 84 150 Z" fill="url(#faceG)"/>
+            <ellipse cx="116" cy="176" rx="14" ry="9" fill="#ff8c8c" opacity=".16"/><ellipse cx="204" cy="176" rx="14" ry="9" fill="#ff8c8c" opacity=".16"/>
+            <ellipse cx="150" cy="106" rx="30" ry="10" fill="#fff" opacity=".13"/>
+            <!-- neat full beard -->
+            <path d="M88 118 C80 156 82 206 104 238 C118 256 142 264 160 264 C178 264 202 256 216 238 C238 206 240 156 232 118 C228 146 224 176 212 190 C200 198 188 197 160 197 C132 197 120 198 108 190 C96 176 92 146 88 118 Z" fill="url(#beardG)"/>
+            <path d="M104 214 C112 238 130 252 150 256 M216 214 C208 238 190 252 170 256" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".06"/>
+            <path d="M128 194 C140 186 153 188 160 193 C167 188 180 186 192 194 C186 203 172 202 160 199 C148 202 134 203 128 194 Z" fill="#2a2a2f"/>
+            <!-- open smile -->
+            <path d="M130 207 Q160 220 190 207 C188 224 176 236 160 236 C144 236 132 224 130 207 Z" fill="#6c1824"/>
+            <g clip-path="url(#mouthClip)">
+              <ellipse cx="160" cy="236" rx="22" ry="12" fill="#e2645f"/>
+              <path d="M126 205 Q160 219 194 205 L194 217 Q160 229 126 217 Z" fill="#fbfbfb"/>
+              <path d="M160 211 L160 224" stroke="#e5e5e5" stroke-width="1.2" opacity=".7"/>
+            </g>
+                        <!-- nose -->
+            <ellipse cx="160" cy="174" rx="15" ry="13" fill="url(#noseG)"/>
+            <ellipse cx="155" cy="168" rx="5" ry="3" fill="#fff" opacity=".4"/>
+            <!-- eyes + brows -->
+            <ellipse cx="129" cy="149" rx="5" ry="7" fill="#232430"/><ellipse cx="191" cy="149" rx="5" ry="7" fill="#232430"/>
+            <ellipse cx="130.5" cy="146.5" rx="1.6" ry="2.2" fill="#fff" opacity=".7"/><ellipse cx="192.5" cy="146.5" rx="1.6" ry="2.2" fill="#fff" opacity=".7"/>
+            <path d="M113 131 Q128 121 146 129 M174 129 Q192 121 207 131" fill="none" stroke="#25252a" stroke-width="7" stroke-linecap="round"/>
+            <!-- short swept hair -->
+            <path d="M82 150 C70 98 90 54 140 46 C156 42 172 38 190 44 C230 54 250 98 238 150 C236 128 228 112 214 102 C198 92 178 92 160 92 C132 92 108 98 98 118 C90 130 84 140 82 150 Z" fill="url(#hairG)"/>
+            <path d="M112 78 C122 50 156 36 192 46 C170 48 152 60 144 82 C132 78 120 78 112 78 Z" fill="#303036"/>
+            <ellipse cx="140" cy="62" rx="34" ry="8" transform="rotate(-12 140 62)" fill="#fff" opacity=".06"/>
+          </svg>
+        </div>
+        <img id="video" alt="Live webcam feed with hand landmarks">
+        <div class="cam-tag" id="camTag"><i></i><span id="camTagTxt">No hand detected</span></div>
+      </div>
+    </div>
+
+    <div class="chip-wrap" id="chipWrap">
+      <div class="chip glass">
+        <div id="livePanel">
+          <h4>Detected sign <span class="tag hidden" id="liveCat" style="margin-left:6px"></span></h4>
+          <div class="sign dim" id="liveSign">–</div>
+          <div class="bar"><i id="confBar"></i></div>
+          <div class="cap">Confidence <strong id="confNum">–</strong></div>
+          <div class="cap" style="margin-top:12px">Status: <strong id="liveStatus">Camera is off</strong></div>
+        </div>
+        <div id="quizPanel" class="hidden">
+          <h4>Show this sign <span class="tag" style="margin-left:6px;background:rgba(14,165,233,.18);color:#0369a1">Challenge</span></h4>
+          <div class="sign" id="qTarget">–</div>
+          <div class="bar"><i id="qBar" style="width:100%"></i></div>
+          <div class="cap" id="qTime">Hold the sign steady</div>
+          <div class="fb" id="qBanner">Start the camera to begin</div>
+          <div class="score"><div>Correct<b id="qScore">0</b></div><div>Tries<b id="qAtt">0</b></div><div>Accuracy<b id="qAcc">–</b></div></div>
+          <div class="cap" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><span>Sees: <strong id="qSees">–</strong></span><button class="link" id="btnReset">Reset score</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress" id="progWrap">
+      <small><span>Progress</span><span id="progTxt">0 of 0 signs practised</span></small>
+      <div class="track"><i id="progFill"></i></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GUIDE ============ -->
+<section class="section" id="guide">
+  <div class="inner">
+    <span class="eyebrow">Guide</span>
+    <h2>How SignSense understands a sign</h2>
+    <p class="lede">Your webcam pictures are never classified directly. Each frame becomes 21 hand points, and only those numbers are compared with what the model learned from your own recordings.</p>
+
+    <div class="flow">
+      <div class="node glass">📷 Webcam</div><span class="arrow">→</span>
+      <div class="node glass">✋ 21 landmarks</div><span class="arrow">→</span>
+      <div class="node glass">📐 Normalise</div><span class="arrow">→</span>
+      <div class="node glass">🧠 Classify</div><span class="arrow">→</span>
+      <div class="node glass">💬 Text + 🔊 Speech</div>
+    </div>
+
+    <div class="steps">
+      <div class="step glass"><div class="num">1</div><h3>Record your signs</h3><p>Run <code>python collect_data.py</code>. Hold each sign and move your hand slightly while 200 samples are recorded. Only landmark numbers are saved.</p></div>
+      <div class="step glass"><div class="num">2</div><h3>Train the model</h3><p>Run <code>python train_model.py</code>. It compares three classifiers, keeps the best one, and reports its accuracy on samples it never trained on.</p></div>
+      <div class="step glass"><div class="num">3</div><h3>Recognise live</h3><p>Press <b>Start camera</b>. The sign appears as text with a confidence bar, and a steady sign is spoken once.</p></div>
+      <div class="step glass"><div class="num">4</div><h3>Practise with the quiz</h3><p>Choose <b>Practice</b>. Hold the target sign for about a second. An exact match scores a point; 12 seconds of nothing counts as a miss.</p></div>
+    </div>
+
+    <div class="two">
+      <div class="step glass"><h3>Tips for better accuracy</h3><ul>
+        <li>Use the same hand for recording and recognising.</li>
+        <li>Good front light and a plain background.</li>
+        <li>Keep your whole hand in view, about an arm's length away.</li>
+        <li>Record at slightly different distances and angles.</li>
+        <li>Make sure no two signs look almost identical.</li>
+        <li>Hold the sign still for about a second.</li></ul></div>
+      <div class="step glass warn"><h3>What it cannot do</h3><ul>
+        <li>No continuous or sentence-level translation.</li>
+        <li>Reads one hand as a still pose; movement and two-handed signs are not captured.</li>
+        <li>Ignores face and body expression.</li>
+        <li>Only knows the signs listed in Vocabulary.</li>
+        <li>One person and one webcam at a time.</li></ul></div>
+    </div>
+
+    <div class="callout glass"><div style="font-size:1.6rem">📘</div><p><b>Check your handshapes.</b> SignSense does not ship an ISL dictionary. Learn the correct sign for each letter, number and word from an official source such as the ISLRTC Indian Sign Language dictionary (<a href="https://islrtc.nic.in" target="_blank" rel="noopener">islrtc.nic.in</a>) before recording, so you train the model on real ISL.</p></div>
+  </div>
+</section>
+
+<!-- ============ VOCABULARY ============ -->
+<section class="section" id="vocab">
+  <div class="inner">
+    <span class="eyebrow">Vocabulary</span>
+    <h2>Signs your model knows</h2>
+    <p class="lede">Every card is a sign in your trained model. A card lights up green when the camera recognises it.</p>
+    <div class="toolbar">
+      <input class="search" id="search" type="search" placeholder="Search signs…" aria-label="Search signs">
+      <div class="chips" id="chips">
+        <button class="fchip on" data-f="all">All</button>
+        <button class="fchip" data-f="alphabet">Alphabets</button>
+        <button class="fchip" data-f="number">Numbers</button>
+        <button class="fchip" data-f="word">Words</button>
+      </div>
+      <div class="count" id="vcount"></div>
+    </div>
+    <div class="vgrid" id="vgrid"><div class="empty">Train a model to see its vocabulary here.</div></div>
+
+    <div class="two" style="margin-top:34px">
+      <div class="step glass"><h3>Add more signs</h3><p>Edit <code>vocabulary.json</code>, run <code>python collect_data.py</code> (it only asks for the new signs), run <code>python train_model.py</code>, then press ↻ in the settings menu.</p></div>
+      <div class="step glass"><h3>Recent signs</h3><div class="history" id="history"><span style="color:var(--light);border:0;background:none;padding:0">Nothing recognised yet</span></div></div>
+    </div>
+  </div>
+</section>
+
+<footer><b>SignSense AI</b> · Indian Sign Language recognition and practice<br>Frames are processed in memory and discarded. Only the trained model and label list are stored on your computer.</footer>
+<div id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let busy = false, inited = false, videoOn = false, state = null, signsKey = "", vocabKey = "", filter = "all", section = "top";
+const practised = new Set();
+
+async function api(path, body) {
+  const opt = body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)};
+  const r = await fetch(path, opt);
+  return r.json();
+}
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 4200);
+}
+async function poll() {
+  if (busy) return; busy = true;
+  try { render(await api("/api/state")); } catch (e) { /* server restarting */ }
+  busy = false;
+}
+setInterval(poll, 100); poll();
+
+function goTop() { window.scrollTo({top: 0, behavior: "smooth"}); }
+function setMode(m) { api("/api/mode", {mode: m}); goTop(); }
+async function toggleCam() {
+  if (state && state.running) { await api("/api/stop", {}); return; }
+  $("btnCam").textContent = "Starting…";
+  const r = await api("/api/start", {camera_index: +$("camIdx").value});
+  if (r.error) toast(r.error);
+}
+async function reloadModel() {
+  const r = await api("/api/reload", {});
+  toast(r.error ? r.error : "Model loaded!");
+}
+
+function buildVocab() {
+  if (!state) return;
+  const q = $("search").value.trim().toLowerCase();
+  const all = state.signs || [];
+  const list = all.filter(s => (filter === "all" || s.category === filter) && s.label.toLowerCase().includes(q));
+  const key = filter + "|" + q + "|" + signsKey;
+  if (key === vocabKey) return;
+  vocabKey = key;
+  const g = $("vgrid"); g.innerHTML = "";
+  if (!list.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = all.length ? "No signs match." : "Train a model to see its vocabulary here."; g.appendChild(e); }
+  list.forEach(s => {
+    const c = document.createElement("div"); c.className = "vcard glass"; c.dataset.sign = s.label;
+    const b = document.createElement("b"); b.textContent = s.label;
+    const t = document.createElement("span"); t.textContent = s.category;
+    c.appendChild(b); c.appendChild(t); g.appendChild(c);
+  });
+  $("vcount").textContent = list.length + " of " + all.length + " signs";
+}
+function updateNav() {
+  const mode = state ? state.mode : "live", top = section === "top";
+  $("lnLive").classList.toggle("active", top && mode === "live");
+  $("lnQuiz").classList.toggle("active", top && mode === "quiz");
+  $("lnGuide").classList.toggle("active", section === "guide");
+  $("lnVocab").classList.toggle("active", section === "vocab");
+}
+
+function render(s) {
+  state = s;
+  const ready = s.model_ready;
+  ["orbWrap", "chipWrap", "progWrap"].forEach(id => $(id).classList.toggle("hidden", !ready));
+  $("setupWrap").classList.toggle("hidden", ready);
+  if (!ready) { $("setupMsg").textContent = s.model_error || ""; updateNav(); return; }
+
+  if (!inited) {
+    $("speak").checked = s.speak;
+    $("thr").value = Math.round(s.threshold * 100); $("thrV").textContent = $("thr").value + "%";
+    inited = true;
+  }
+  const key = (s.signs || []).map(x => x.label).join("|");
+  if (key !== signsKey) { signsKey = key; }
+  buildVocab();
+
+  $("livePanel").classList.toggle("hidden", s.mode !== "live");
+  $("quizPanel").classList.toggle("hidden", s.mode !== "quiz");
+  $("btnMode").textContent = s.mode === "live" ? "Try practice mode" : "Back to recognition";
+  updateNav();
+
+  // camera
+  $("btnCam").textContent = s.running ? "■ Stop camera" : "▶ Start camera";
+  $("btnCam").classList.toggle("stop", s.running);
+  if (s.running && !videoOn) { $("video").src = "/video_feed?t=" + Date.now(); videoOn = true; }
+  if (!s.running && videoOn) { $("video").removeAttribute("src"); videoOn = false; }
+  $("video").style.display = s.running ? "block" : "none";
+  $("avatar").style.display = s.running ? "none" : "block";
+  $("camTag").style.display = s.running ? "flex" : "none";
+  $("camTag").classList.toggle("on", s.hand);
+  $("camTagTxt").textContent = s.hand ? "Hand detected" : "No hand detected";
+  if (s.camera_error && !s.running) toast(s.camera_error);
+  if (s.speech_error && !render.warned) { render.warned = true; toast("Speech unavailable: " + s.speech_error); }
+
+  const p = s.prediction, shown = p && p.accepted, orb = $("orb");
+  orb.className = "orb" + (s.running && s.hand ? " ok" : "");
+
+  const q = s.quiz;
+
+  // highlight matching cards
+  document.querySelectorAll("[data-sign]").forEach(el => el.classList.toggle("hit", !!(shown && el.dataset.sign === p.label)));
+
+  // live chip
+  $("liveSign").textContent = shown ? p.label : "–";
+  $("liveSign").classList.toggle("dim", !shown);
+  $("liveCat").classList.toggle("hidden", !shown);
+  if (shown) $("liveCat").textContent = p.category;
+  const conf = p ? p.confidence : 0;
+  $("confBar").style.width = (conf * 100) + "%";
+  $("confNum").textContent = p ? Math.round(conf * 100) + "%" : "–";
+  $("liveStatus").textContent = s.status || "Camera is off";
+
+  // history + progress
+  (s.history || []).forEach(x => practised.add(x));
+  const h = $("history"); h.innerHTML = "";
+  if (!s.history.length) { const e = document.createElement("span"); e.style.cssText = "color:var(--light);border:0;background:none;padding:0"; e.textContent = "Nothing recognised yet"; h.appendChild(e); }
+  s.history.slice().reverse().forEach(x => { const e = document.createElement("span"); e.textContent = x; h.appendChild(e); });
+
+  // quiz chip
+  if (q && s.mode === "quiz") {
+    $("qTarget").textContent = q.target;
+    const frac = q.phase === "attempt" && s.running ? q.time_left / q.timeout : 0;
+    $("qBar").style.width = (frac * 100) + "%";
+    $("qBar").classList.toggle("low", frac < 0.3);
+    $("qTime").textContent = s.running && q.phase === "attempt" ? Math.ceil(q.time_left) + "s left · hold the sign steady" : "Hold the sign steady";
+    const b = $("qBanner"), lr = q.last_result;
+    if (s.running && q.phase === "feedback" && lr) {
+      b.className = "fb " + (lr.correct ? "good" : "bad");
+      b.textContent = lr.correct ? "✅ Correct!" : (lr.predicted ? "❌ Incorrect - looked like " + lr.predicted : "⏱ Time's up");
+      orb.className = "orb " + (lr.correct ? "good" : "bad");
+      if (lr.correct) practised.add(lr.target);
+    } else { b.className = "fb"; b.textContent = s.running ? "Show the sign to the camera" : "Start the camera to begin"; }
+    $("qScore").textContent = q.score; $("qAtt").textContent = q.attempts;
+    $("qAcc").textContent = q.attempts ? Math.round(q.accuracy * 100) + "%" : "–";
+    $("qSees").textContent = p ? p.label + " (" + Math.round(p.confidence * 100) + "%)" : "–";
+  } else if (s.mode === "quiz") { $("qBanner").textContent = "The quiz needs at least 2 trained signs."; }
+
+  const total = (s.signs || []).length, done = [...practised].filter(x => (s.labels || []).includes(x)).length;
+  orb.classList.toggle("live", s.running);
+  $("progFill").style.width = (total ? done / total * 100 : 0) + "%";
+  $("progTxt").textContent = done + " of " + total + " signs practised";
+}
+
+// ---- events
+$("lnLive").addEventListener("click", () => setMode("live"));
+$("lnQuiz").addEventListener("click", () => setMode("quiz"));
+$("btnMode").addEventListener("click", () => setMode(state && state.mode === "live" ? "quiz" : "live"));
+$("btnCam").addEventListener("click", toggleCam);
+$("btnReload").addEventListener("click", reloadModel);
+$("btnReloadTop").addEventListener("click", () => { reloadModel(); $("menu").classList.remove("open"); });
+$("btnReset").addEventListener("click", () => api("/api/quiz/reset", {}));
+$("speak").addEventListener("change", e => api("/api/settings", {speak: e.target.checked}));
+$("thr").addEventListener("input", e => { $("thrV").textContent = e.target.value + "%"; api("/api/settings", {threshold: e.target.value / 100}); });
+$("btnMenu").addEventListener("click", e => { e.stopPropagation(); $("menu").classList.toggle("open"); });
+document.addEventListener("click", e => { if (!$("menu").contains(e.target)) $("menu").classList.remove("open"); });
+$("btnSearch").addEventListener("click", () => { $("vocab").scrollIntoView({behavior: "smooth"}); setTimeout(() => $("search").focus(), 600); });
+$("search").addEventListener("input", () => { vocabKey = ""; buildVocab(); });
+$("chips").addEventListener("click", e => {
+  const c = e.target.closest(".fchip"); if (!c) return;
+  document.querySelectorAll(".fchip").forEach(x => x.classList.toggle("on", x === c));
+  filter = c.dataset.f; vocabKey = ""; buildVocab();
+});
+const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { section = en.target.id; updateNav(); } }),
+  {rootMargin: "-35% 0px -55% 0px"});
+["top", "guide", "vocab"].forEach(id => io.observe($(id)));
+window.addEventListener("scroll", () => $("nav").classList.toggle("scrolled", window.scrollY > 8), {passive: true});
+</script>
+</body>
+</html>
