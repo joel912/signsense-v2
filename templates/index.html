@@ -187,7 +187,6 @@ h2{font-size:3rem;font-weight:600;letter-spacing:-.03em;line-height:1.12;margin:
 .lede{color:var(--muted);font-size:.98rem;line-height:1.75;max-width:42rem}
 .flow{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;margin:2.2rem 0 .5rem}
 .node{border-radius:1.2rem;padding:.9rem 1.3rem;font-weight:500;font-size:.88rem}
-.node{display:inline-flex;align-items:center;gap:.45rem}.node svg,.btn svg,.btn-g svg{width:1rem;height:1rem}
 .arrow{color:var(--light);font-size:1.2rem}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1.3rem;margin-top:2rem}
 .step{border-radius:1.7rem;padding:1.7rem}
@@ -244,17 +243,17 @@ footer b{color:var(--ink)}
   </nav>
   <div class="right">
     <button class="icon-btn" id="btnSearch" title="Search signs" aria-label="Search signs">
-      <i data-lucide="search"></i>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
     </button>
     <button class="me" id="btnMenu" aria-label="Settings"><span class="av"><svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8.5" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg></span>
-      <i data-lucide="chevron-down"></i>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="menu glass" id="menu">
       <h5>Settings</h5>
       <div class="row"><span>Speak signs</span><input type="checkbox" id="speak" checked></div>
       <div class="row"><span>Confidence</span><span style="display:flex;align-items:center;gap:8px"><input type="range" id="thr" min="30" max="95" step="5" value="70"><span class="v" id="thrV">70%</span></span></div>
       <div class="row"><span>Camera</span><select id="camIdx"><option>0</option><option>1</option><option>2</option><option>3</option></select></div>
-      <button class="btn-g" id="btnReloadTop" style="width:100%;padding:11px"><i data-lucide="refresh-cw"></i> Reload model</button>
+      <button class="btn-g" id="btnReloadTop" style="width:100%;padding:11px">↻ Reload model</button>
     </div>
   </div>
 </header>
@@ -266,7 +265,7 @@ footer b{color:var(--ink)}
       <h1>Sign<br>Studio</h1>
       <p class="sub">Practise Indian Sign Language with a friendly coach. Show a sign to your webcam and get instant, spoken feedback.</p>
       <div class="cta">
-        <button class="btn" id="btnCam"><i data-lucide="camera"></i> <span id="camText">Start camera</span></button>
+        <button class="btn" id="btnCam">▶ Start camera</button>
         <button class="btn-g" id="btnMode">Try practice mode</button>
       </div>
     </div>
@@ -278,7 +277,7 @@ footer b{color:var(--ink)}
         <div class="code">python collect_data.py
 python train_model.py</div>
         <p>Then press <b>Reload model</b>.</p>
-        <div class="cta"><button class="btn" id="btnReload"><i data-lucide="refresh-cw"></i> Reload model</button></div>
+        <div class="cta"><button class="btn" id="btnReload">↻ Reload model</button></div>
       </div>
     </div>
 
@@ -473,11 +472,11 @@ python train_model.py</div>
     <p class="lede">Your webcam pictures are never classified directly. Each frame becomes 21 hand points, and only those numbers are compared with what the model learned from your own recordings.</p>
 
     <div class="flow">
-      <div class="node glass"><i data-lucide="camera"></i> Webcam</div><span class="arrow">→</span>
+      <div class="node glass">📷 Webcam</div><span class="arrow">→</span>
       <div class="node glass">✋ 21 landmarks</div><span class="arrow">→</span>
       <div class="node glass">📐 Normalise</div><span class="arrow">→</span>
       <div class="node glass">🧠 Classify</div><span class="arrow">→</span>
-      <div class="node glass"><i data-lucide="message-square"></i> Text + <i data-lucide="volume-2"></i> Speech</div>
+      <div class="node glass">💬 Text + 🔊 Speech</div>
     </div>
 
     <div class="steps">
@@ -560,7 +559,7 @@ function goTop() { window.scrollTo({top: 0, behavior: "smooth"}); }
 function setMode(m) { api("/api/mode", {mode: m}); goTop(); }
 async function toggleCam() {
   if (state && state.running) { await api("/api/stop", {}); return; }
-  $("camText").textContent = "Starting…";
+  $("btnCam").textContent = "Starting…";
   const r = await api("/api/start", {camera_index: +$("camIdx").value});
   if (r.error) toast(r.error);
 }
@@ -617,7 +616,7 @@ function render(s) {
   updateNav();
 
   // camera
-  $("camText").textContent = s.running ? "Stop camera" : "Start camera";
+  $("btnCam").textContent = s.running ? "■ Stop camera" : "▶ Start camera";
   $("btnCam").classList.toggle("stop", s.running);
   if (s.running && !videoOn) { $("video").src = "/video_feed?t=" + Date.now(); videoOn = true; }
   if (!s.running && videoOn) { $("video").removeAttribute("src"); videoOn = false; }
@@ -717,10 +716,6 @@ window.addEventListener("scroll", () => $("nav").classList.toggle("scrolled", wi
   }
 
   requestAnimationFrame(raf);
-</script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<script>
-  lucide.createIcons();
 </script>
 </body>
 </html>
